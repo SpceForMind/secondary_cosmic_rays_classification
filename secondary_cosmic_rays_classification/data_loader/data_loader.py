@@ -127,13 +127,13 @@ class DataLoader:
 if __name__ == '__main__':
     data_loader = DataLoader()
     config_setup_json_configs = [
-        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/load_config_creator/json/calm_days_dates.json',
-        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/load_config_creator/json/low_storm_dates.json',
-        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/load_config_creator/json/high_storm_dates.json'
+        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/load_config_creator/json/unsc_kalman_7_dates.json'
     ]
 
     for json_config in config_setup_json_configs:
         data_loader.load_data(
             load_dates_config_path=json_config,
-            data_dir='/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/data'
+            data_dir='/home/spaceformind/secondary_cosmic_rays_classification/'
+                     'secondary_cosmic_rays_classification/data/'
+                     'loaded'
         )

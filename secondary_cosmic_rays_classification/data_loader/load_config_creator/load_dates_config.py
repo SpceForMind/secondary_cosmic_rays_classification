@@ -52,9 +52,7 @@ class LoadDatesConfig:
 if __name__ == '__main__':
     load_dates_config = LoadDatesConfig()
     task_setup_txt_files_with_dates = [
-        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/load_config_creator/txt/calm_days_dates.txt',
-        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/load_config_creator/txt/low_storm_dates.txt',
-        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/load_config_creator/txt/high_storm_dates.txt'
+        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/load_config_creator/txt/unsc_kalman_7_dates.txt'
     ]
 
     for path_to_txt in task_setup_txt_files_with_dates:

@@ -5,8 +5,11 @@ from secondary_cosmic_rays_classification.data_loader.dataset.date_and_pressure_
 
 
 class AfterDataLoadedProcessor:
-    date__key = 'data'
+    date__key = 'loaded'
     pressure__key = 'pressure'
+
+    def __init__(self):
+        self.__count_corrections = 0
 
     def fill_miss_data_by_median(self,
                                  path_to_datasets_dir: str,
@@ -47,6 +50,8 @@ class AfterDataLoadedProcessor:
                 self.__update_dataset_with_additional_data(path_to_dataset=path_to_dataset)
             else:
                 print('!!! Data has no missed values !!!')
+
+            print('Count corrections:', self.__count_corrections)
 
     def __update_dataset_with_additional_data(self,
                                               path_to_dataset):
@@ -97,14 +102,14 @@ class AfterDataLoadedProcessor:
     def __find_missed_data_and_insert_median_value(self) -> bool:
         '''
 
-        :return: if data was modified by new missed values -> True
+        :return: if loaded was modified by new missed values -> True
                                                     / else -> False
         '''
         data_has_missed_values = True
         previous_data_len = len(self.__date_and_pressure_list)
 
         while data_has_missed_values:
-            # In cycle bellow switch it to True if data has missed values / else -> while {False} and break out
+            # In cycle bellow switch it to True if loaded has missed values / else -> while {False} and break out
             data_has_missed_values = False
             missed_data_and_index_pairs_list = []
 
@@ -123,6 +128,7 @@ class AfterDataLoadedProcessor:
                         (missed_data, data_idx)
                     )
                     data_has_missed_values = True
+                    self.__count_corrections += 1
 
             for missed_data, idx_after_insert in missed_data_and_index_pairs_list:
                 self.__date_and_pressure_list.insert(
@@ -133,13 +139,10 @@ class AfterDataLoadedProcessor:
         return len(self.__date_and_pressure_list) > previous_data_len
 
 
-
 if __name__ == '__main__':
     data_processor = AfterDataLoadedProcessor()
     setup_task_daatasets_path = [
-        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/data/calm_days_dates_datasets',
-        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/data/low_storm_dates_datasets',
-        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/data/high_storm_dates_datasets'
+        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/loaded/before_unsc_kalman_7_dates'
     ]
 
     for path_to_datasets in setup_task_daatasets_path:
