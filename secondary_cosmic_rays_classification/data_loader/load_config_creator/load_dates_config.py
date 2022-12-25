@@ -22,7 +22,7 @@ class LoadDatesConfig:
             dates = [line.strip('\n') for line in f.readlines()]
 
             for date in  dates:
-                year, month, day = [int(number) for number in date.split(sep=num_sep_in_txt)]
+                day, month, year = [int(number) for number in date.split(sep=num_sep_in_txt)]
 
                 load_day_config = LoadDayConfig()
                 load_day_config.create(
@@ -52,7 +52,9 @@ class LoadDatesConfig:
 if __name__ == '__main__':
     load_dates_config = LoadDatesConfig()
     task_setup_txt_files_with_dates = [
-        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/load_config_creator/txt/unsc_kalman_7_dates.txt'
+        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/load_config_creator/txt/spaceweatherlive_full/calm.txt',
+        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/load_config_creator/txt/spaceweatherlive_full/high.txt',
+        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/load_config_creator/txt/spaceweatherlive_full/middle.txt'
     ]
 
     for path_to_txt in task_setup_txt_files_with_dates:

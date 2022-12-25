@@ -1,5 +1,6 @@
 import requests
 import os
+import random
 from concurrent import futures
 
 from secondary_cosmic_rays_classification.data_loader.load_config_creator.load_dates_config import LoadDatesConfig
@@ -25,15 +26,18 @@ class DataLoader:
 
         self.__processed_count_requests = 0
         self.__total_count_requests = len(load_dates_config.config)
+        random.shuffle(load_dates_config.config)
 
         # Multi Thread Load requests
         with futures.ThreadPoolExecutor() as executor:
             res = [executor.submit(self.__load_data_by_day_config, load_day_config_dict)
-                   for load_day_config_dict in load_dates_config.config]
+                   for load_day_config_dict in load_dates_config.config[:1000]]
             futures.wait(res)
+        # for load_day_config_dict in load_dates_config.config:
+        #     self.__load_data_by_day_config(load_day_config_dict)
 
     def __load_data_by_day_config(self,
-                                load_day_config_dict: dict):
+                                  load_day_config_dict: dict):
         load_day_config = LoadDayConfig()
         load_day_config.load_config_from_obj(
             config_dict=load_day_config_dict
@@ -127,13 +131,21 @@ class DataLoader:
 if __name__ == '__main__':
     data_loader = DataLoader()
     config_setup_json_configs = [
-        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/load_config_creator/json/unsc_kalman_7_dates.json'
+        # '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/'
+        # 'load_config_creator/json/high_dates.json',
+        # '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/'
+        # 'load_config_creator/json/middle_dates.json'
+        # '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/'
+        # 'load_config_creator/json/middle.json',
+        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/'
+        'load_config_creator/json/calm.json',
+        # '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data_loader/'
+        # 'load_config_creator/json/high.json'
     ]
 
     for json_config in config_setup_json_configs:
         data_loader.load_data(
             load_dates_config_path=json_config,
-            data_dir='/home/spaceformind/secondary_cosmic_rays_classification/'
-                     'secondary_cosmic_rays_classification/data/'
-                     'loaded'
+            data_dir='/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/'
+                     'data/all_days'
         )

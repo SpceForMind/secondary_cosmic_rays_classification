@@ -2,6 +2,7 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime
+import numpy as np
 from typing import List, Tuple, Any
 
 from secondary_cosmic_rays_classification.data_loader.data_string_content_info import DataStringContentInfo
@@ -47,13 +48,40 @@ class DateAndPressureDataset:
 
         return datetimes_and_presures_list
 
-    def get_presures_list(self) -> List[float]:
+    def get_batched_pressures_list(self,
+                                   scaling: bool = False) -> List[List[float]]:
+        pressures_list = []
+
+        for dataset in self.__batched_dataset:
+            pressures = []
+
+            for line in dataset[1:]:
+                pressures.append(
+                    float(line.split(DateAndPressureDataset.data__sepparator)[1])
+                )
+
+            if scaling:
+                pressures = np.array(pressures)
+                pressures = pressures / pressures.max()
+                pressures = list(pressures)
+
+            pressures_list.append(pressures)
+
+        return pressures_list
+
+    def get_presures_list(self,
+                          scalling: bool = False) -> List[float]:
         presures_list = []
 
         for line in self.__dataset[1 : ]:
             presures_list.append(
                 float(line.split(DateAndPressureDataset.data__sepparator)[1])
             )
+
+        if scalling:
+            presures_list = np.array(presures_list)
+            presures_list = presures_list / presures_list.max()
+            presures_list = list(presures_list)
 
         return presures_list
 
@@ -89,15 +117,24 @@ class DateAndPressureDataset:
             self.__dataset = [line.strip('\n') for line in f.readlines()]
 
     def read_all_datasets_from_dir(self,
-                                   dir_path: str):
+                                   dir_path: str,
+                                   batched: bool = False):
         self.clear_and_set_headder()
+
+        if batched:
+            self.clear_and_set_headder_for_batched_dataset()
 
         for dataset_name in os.listdir(dir_path):
             path = os.path.join(dir_path, dataset_name)
 
             with open(path, 'r') as f:
-                data = [line.strip('\n') for line in f.readlines()[1 : ]]
-                self.__dataset += data
+                data = [line.strip('\n') for line in f.readlines()]
+                self.__dataset += data[1 :]
+
+                if batched:
+                    if len(data) == 1442:
+                        print(path)
+                    self.__batched_dataset.append(data)
 
     def save(self,
              path: str):
@@ -107,10 +144,17 @@ class DateAndPressureDataset:
 
     def clear_and_set_headder(self):
         self.__dataset = [
-            f'{DateAndPressureDataset.date_info__header}'
-            f'{DateAndPressureDataset.data__sepparator}'
-            f'{DateAndPressureDataset.pressure__header}'
+            self.__generate_header()
         ]
+
+    def clear_and_set_headder_for_batched_dataset(self):
+        self.__batched_dataset = []
+
+    def __generate_header(self):
+        header = f'{DateAndPressureDataset.date_info__header}' \
+                 f'{DateAndPressureDataset.data__sepparator}' \
+                 f'{DateAndPressureDataset.pressure__header}'
+        return header
 
     def generate_dataset_from_presure_list_and_datetime_list(self,
                                                              presure_list: List[float],
@@ -157,7 +201,8 @@ class DateAndPressureDataset:
     def __transform_date_in_data_string_to_single_format(self,
                                                          data_str: str) -> str:
         year_month_day, hour_min_sec_and_pressure = data_str.split(
-            DataStringContentInfo.between_YrMthDay_and_HrMnSc__sepparator
+            DataStringContentInfo.between_YrMthDay_and_HrMnSc__sepparator,
+            maxsplit=1
         )
         hour_min_sec, pressure = hour_min_sec_and_pressure.split(
             DataStringContentInfo.between_date_info_and_pressure__sepparator
