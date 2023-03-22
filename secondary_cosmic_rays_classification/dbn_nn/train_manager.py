@@ -4,7 +4,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics._classification import accuracy_score
 from imblearn.over_sampling import SMOTE
 
-from tensorflow import keras
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 from secondary_cosmic_rays_classification.dbn_nn.dbn.tensorflow import SupervisedDBNClassification
 from secondary_cosmic_rays_classification.data_loader.dataset.date_and_pressure_dataset import DateAndPressureDataset
@@ -12,26 +13,26 @@ from secondary_cosmic_rays_classification.data_loader.dataset.date_and_pressure_
 
 class DBNTrainManager:
     def create_model(self,
-                     hidden_layers_structure: list = [264, 264],
+                     hidden_layers_structure: list = [1440],
                      learning_rate_rbm: float = 0.05,
                      learning_rate: float = 0.1,
-                     n_epochs_rbm: int = 1,
-                     n_iter_backprop: int = 10,
+                     n_epochs_rbm: int = 50,
+                     n_iter_backprop: int = 150,
                      batch_size: int = 32,
                      activation_function: str = 'relu',
-                     dropout_p: float = 0.2
+                     dropout_p: float = 0.5
                      ):
+
         self.__classifier = SupervisedDBNClassification(
             hidden_layers_structure=hidden_layers_structure,
-            learning_rate_rbm=learning_rate_rbm,
-            learning_rate=learning_rate,
+            # learning_rate_rbm=learning_rate_rbm,
+            # learning_rate=learning_rate,
             n_epochs_rbm=n_epochs_rbm,
             n_iter_backprop=n_iter_backprop,
-            batch_size=batch_size
+            batch_size=batch_size,
             #activation_function=activation_function,
-            #dropout_p=dropout_p
+            dropout_p=dropout_p
         )
-        print('yes')
 
     def fit(self):
         self.__classifier.fit(
@@ -44,8 +45,8 @@ class DBNTrainManager:
 
         str_accuracy = str(accuracy * 10000).split('.')[0]
         self.__classifier.save(
-            save_path=f'/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/'\
-                      f'dbn_nn/ckpt/{str_accuracy}'
+            save_path=f'/home/user/projects/rays/secondary_cosmic_rays_classification/dbn_nn/ckpt/'
+                      f'{str_accuracy}_ckpt.pkl'
         )
 
     def load_data(self,
@@ -93,15 +94,16 @@ class DBNTrainManager:
             stratify=Y
         )
 
-        sm = SMOTE(sampling_strategy='auto', k_neighbors=5, random_state=12)
-        self.X_train, self.Y_train = sm.fit_resample(self.X_train, self.Y_train)
+        # sm = SMOTE(sampling_strategy='auto', k_neighbors=8, random_state=12)
+        # self.X_train, self.Y_train = sm.fit_resample(self.X_train, self.Y_train)
         print(self.X_train.shape)
+        print(self.X_test.shape)
 
 
 if __name__ == '__main__':
     dbn = DBNTrainManager()
     dbn.load_data(
-        train_dir_path='/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data/spacewheatherlive/'
+        train_dir_path='/home/user/projects/rays/secondary_cosmic_rays_classification/data/all_days/'
     )
     dbn.create_model()
     dbn.fit()

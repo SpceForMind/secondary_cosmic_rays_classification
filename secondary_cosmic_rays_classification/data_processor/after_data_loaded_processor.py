@@ -193,8 +193,7 @@ if __name__ == '__main__':
         # 'spacewheatherlive/middle',
         # '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data/'
         # 'spacewheatherlive/calm_40'
-        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data/'
-        'spacewheatherlive/calm_891'
+        '/home/spaceformind/secondary_cosmic_rays_classification/secondary_cosmic_rays_classification/data/all_days/middle_datasets'
     ]
 
     for path_to_datasets in setup_task_datasets_path:

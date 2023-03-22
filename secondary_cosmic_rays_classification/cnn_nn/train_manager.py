@@ -1,4 +1,6 @@
 import glob
+import os
+
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics._classification import accuracy_score
@@ -15,11 +17,17 @@ class CNNTrainManager:
         self.__model = keras.models.Sequential([
             keras.layers.TimeDistributed(
                 keras.layers.Conv1D(
-                    filters=64,
+                    filters=256,
                     kernel_size=3,
                     activation='relu'
                 ),
-                input_shape=(24, 6, 10), # 24 * 60 -> 1440 ---> 24 * 6 * 10
+                input_shape=(12, 12, 10),  # 24 * 60 -> 1440 ---> 24 * 6 * 10
+            ),
+            keras.layers.TimeDistributed(
+                keras.layers.Conv1D(
+                    filters=128,
+                    kernel_size=3,
+                    activation='relu')
             ),
             keras.layers.TimeDistributed(
                 keras.layers.Conv1D(
@@ -34,16 +42,41 @@ class CNNTrainManager:
                 keras.layers.MaxPooling1D(pool_size=2)
             ),
             keras.layers.TimeDistributed(keras.layers.Flatten()),
-            keras.layers.LSTM(100),
+            keras.layers.LSTM(64),
             keras.layers.Dropout(0.5),
-            keras.layers.Dense(100, activation='relu'),
+            keras.layers.Dense(32, activation='relu'),
             keras.layers.Dense(3, activation='sigmoid')
         ])
         self.__model.compile(
             loss='categorical_crossentropy',
-            optimizer='adam'
+            optimizer='adam',
+            metrics=['accuracy']
         )
         self.__model.summary(line_length=100)
+
+    def fit(self,
+            epochs: int = 50):
+        self.__model.fit(
+            x=self.X_train,
+            y=self.Y_train,
+            epochs=epochs,
+            batch_size=32,
+            shuffle=True
+        )
+
+    def test(self):
+        self.__metric = self.__model.evaluate(
+            x=self.X_test,
+            y=self.Y_test
+        )
+        self.__acc = self.__metric[1]
+
+    def save(self,
+             ckpt_dir_path: str):
+        metric_str = str(self.__acc * 10000).split('.')[0]
+        path = os.path.join(ckpt_dir_path, f'{metric_str}_ckpt.h5')
+        print(path)
+        self.__model.save(filepath=path)
 
     def load_data(self,
                   train_dir_path: str):
@@ -77,7 +110,7 @@ class CNNTrainManager:
                 Y.append(label)
 
         X = np.array(X)
-        X = X.reshape((24, 6, 10))
+        print(X.shape)
         Y = np.array(Y)
         Y_categorical = keras.utils.to_categorical(
             Y, num_classes=3
@@ -86,16 +119,29 @@ class CNNTrainManager:
         self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split(
             X,
             Y_categorical,
-            test_size=0.15,
+            test_size=0.2,
             random_state=42,
             stratify=Y_categorical
         )
 
-        sm = SMOTE(sampling_strategy='auto', k_neighbors=5, random_state=12)
-        self.X_train, self.Y_train = sm.fit_resample(self.X_train, self.Y_train)
-        print(self.X_train.shape)
+        # sm = SMOTE(sampling_strategy='auto', k_neighbors=20, random_state=12)
+        # self.X_train, self.Y_train = sm.fit_resample(self.X_train, self.Y_train)
+
+        self.X_train = self.X_train.reshape((-1, 12, 12, 10))
+        self.X_test = self.X_test.reshape((-1, 12, 12, 10))
 
 
 if __name__ == '__main__':
-    CNNTrainManager().load_data()
+    classifier = CNNTrainManager()
 
+    classifier.load_data(
+        train_dir_path='/home/user/projects/rays/secondary_cosmic_rays_classification/data/all_days/'
+    )
+    classifier.create_model()
+    classifier.fit(
+        epochs=10
+    )
+    classifier.test()
+    classifier.save(
+        ckpt_dir_path='/home/user/projects/rays/secondary_cosmic_rays_classification/cnn_nn/ckpt'
+    )
